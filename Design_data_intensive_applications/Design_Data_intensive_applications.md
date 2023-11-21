@@ -111,5 +111,26 @@
 ### Handling write conflicts
     The biggest problem with multi-leader replication is that write conflicts can occur, which means that conflict resolution is required.
 ![Alt text](image-4.png)
-
+- Last write wins (LWW)
+- Timestamp ordering
+- Application-level conflict resolution
+- Conflict avoidance
+- Converging toward a consistent state
+- Custom conflict resolution logic
+    - on write
+         - As soon as the database sysem detects a conflict in the log of replicated changes, it calls the conflict handler.
+    - on read
+        - when a conflict is detected, all the conflicting writes are stored, and the application is notified of the conflict when it reads one of the conflicting writes.
+    - Automatic conflict resolution
+        - The database system automatically resolves conflicts, without calling the application code.
+        - Conflict-free replicated datatypes
+        - mergeable persistent data structures
+        - operational transformation
+### Multi-leader replication topologies
+   A replication topology is the arrangement of replication links between nodes.
+   ![Alt text](image-5.png)
+    The most general toplogy is all-to-all, in which every leaders sends its writes to every other leaders.
+    .   Mysql  by default supports only a circular toplogy, in which each leader only has one upstream leader and one downstream leader.
+    
+## Leaderless replication
 
