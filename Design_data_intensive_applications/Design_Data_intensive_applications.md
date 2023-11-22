@@ -131,12 +131,54 @@
    ![Alt text](image-5.png)
     The most general toplogy is all-to-all, in which every leaders sends its writes to every other leaders.
     .   Mysql  by default supports only a circular toplogy, in which each leader only has one upstream leader and one downstream leader.
-    
+
 ## Leaderless replication
 ### what is leaderless replication?
     Leaderless replication means that any node can accept a write and that writes are propagated asynchronously to other nodes.
     Single-leader replication is a special case of leaderless replication, where there is only one node that is allowed to accept writes at any given time.
     multi-leader replication is a special case of leaderless replication, where all nodes are allowed to accept writes at any given time.
     Some data storage systems take a different approach, abondoning the concept of leader and allowing any replica to directly accept writes from clients, this idea is forgotten during  the era of relational databases. And it once again became an popular architecture of database after Amazon Dynamo.Riak, Cassandra, and Voldemort are open source datastores with leaderless replication model inspired by Dynamo.
-    - In some headerless implementations, the clients directly sends its writes to several replicas, while in others, a a
+    - In some headerless implementations, the clients directly sends its writes to several replicas, while in others,  a cordinator node does this on behalf of the client.
+#### Writing to the database when a node is Down
+Imagine you hava a database with three replicas, and one of the replicas is currently unavailable - perhaps it is being rebooted to install a system update.\
+    * In a leader-based system, if you want to continue processing writes, you may need to perform a failover to elect a new leaders.
+    * On the other hand, in a leaderless configuration, failover does not exists.The client sends the write to all thress replicas in parallel, and the replicas that are currently available will accept the write.
+![Alt text](image-6.png)
+    * solution : when a client reads from the database,  the read requests are also sent to several nodes in parallel, version number are used to determine which value is newer.
+1. read repair and anti-entropy
+        - read repair When a client read from several nodes in parallel, it can detet any stale responses, For example, user 2345 gets a version 6 value from replica 3 and a version 7 value from replica 1 and 2. This client sees that replica 3  has a stale value and write the newer value back to that replica. This approach works well for values that are frequently read.
+        - Anti-entropy process some datastores have a background process that constantly looks for differences in the data between replicas and copies any missing data from one replica to another.
+2. Quorums for reading and writing
+        - If there are n replicas, every write must be confirmed by w nodes to be considered successful, and we must query at least r nodes for each read.(In our example, n= 3,w=2, and r =2). As long as w+r > n, the system can tolerate both unavailable nodes and delayed writes.
+        - If w+r <= n, the system can tolerate only crashes, not slow or overloaded nodes.
+![Alt text](image-7.png)
+#### Limations quorum consistency
+-  monitoring the staleness
+    -  For leader-based replication
+        The leader can keep track of the replication lag of each follower, and it can refuse to serve reads from followers that are too far behind the leader. The database exposes metrics for the replication lag, which you can feed into a monitoring sytem.
+    -  For leaderless replication
+         The database can keep track of the version number of each key, and it can refuse to serve reads from replicas that are too far behind the latest version number. The database exposes metrics for the version number, which you can feed into a monitoring sytem.
+
+#### Sloppy quorums and hinted handoff
+- Sloppy quorums
+    -  If a node is unavailable, the database can still process writes by temporarily reducing the durability guarantee.
+    -  The database can temporarily accept writes even if they cannot be confirmed by the required number of replicas.
+    -  The database can temporarily accept reads even if they cannot be confirmed by the required number of replicas.
+- multi-datacenter operation
+    leaderless replication is also suitabvle for multi-datacenter operation, since it is designed to tolerate conflicting concurrent writes, network interruptions and latency spikes.
+    - Cassandra and vodement implements their multi-datacenter support within the normal leaderless model
+    - Riak keeps all communication betweeen clients and database nodes local to one datacenter,
+    so n describes the number of replicas within one datacenter.
+#### Detecting concurrent writes
+![Alt text](image-8.png)
+- last writes wins
+- the happens-before relationship and concurrency
+- capturing that happens-before relationship
+![Alt text](image-9.png)
+- Mergin concurrently written values
+- version vectors and vector clocks
+    - A verison vectors is sometimes also called a vector clock.even though they are not quite the same. When comparing the state of replicas, version vectors are the right data structure to use.
+## Summary 
+![Alt text](image-10.png)
+
 
