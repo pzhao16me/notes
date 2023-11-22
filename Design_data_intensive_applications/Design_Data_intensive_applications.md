@@ -133,4 +133,10 @@
     .   Mysql  by default supports only a circular toplogy, in which each leader only has one upstream leader and one downstream leader.
     
 ## Leaderless replication
+### what is leaderless replication?
+    Leaderless replication means that any node can accept a write and that writes are propagated asynchronously to other nodes.
+    Single-leader replication is a special case of leaderless replication, where there is only one node that is allowed to accept writes at any given time.
+    multi-leader replication is a special case of leaderless replication, where all nodes are allowed to accept writes at any given time.
+    Some data storage systems take a different approach, abondoning the concept of leader and allowing any replica to directly accept writes from clients, this idea is forgotten during  the era of relational databases. And it once again became an popular architecture of database after Amazon Dynamo.Riak, Cassandra, and Voldemort are open source datastores with leaderless replication model inspired by Dynamo.
+    - In some headerless implementations, the clients directly sends its writes to several replicas, while in others, a a
 
