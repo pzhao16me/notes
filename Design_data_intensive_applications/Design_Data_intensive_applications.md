@@ -206,4 +206,71 @@ You hava a large amount of data, and you want to split it up into partitions so 
     - For partitioning, the hash function need not be cryptographically secure; it just needs to be good enough to distribute the data evenly across the partitions.
     - hash_code() functions which in many programming languages may not be suitable for partitioning because they are not randomizeda and the same key may have a different value in  different processes.
 ![Alt text](image-13.png)
+## Partitioning and Secondary Indexes
+### partition of secondary indexes by document
+- The simplest way to implement a secondary index is to build an index on each partition independently.
+- The problem with this approach is that it does not allow efficient execution of queries that span multiple partitions.
+- The solution is to use a distributed index, where the index is partitioned and distributed across nodes in the same way as the data.
+- The most common way of implementing a distributed index is to use a document-partitioned index, where each index entry corresponds to a document on the same partition.
+### partition of secondary indexes by term
+- The term-partitioned indexes are more flexible than document-partitioned indexes, because they allow efficient execution of queries that span multiple partitions.
+- The term-partitioned indexes are more complex to implement than document-partitioned indexes, because they require a distributed index that can efficiently find the documents containing a given term.
+
+## Rebalancing Partitions
+some changes for the dataset need to be rebalanced
+- adding a new node
+- machine faild
+- dataset size increases
+All those changes call for data and request to be moved from one node to another.
+The process of moving load from one node in the cluster to another is called rebalancing. 
+### strategies for rebalancing
+- fixed number of partitions
+    - The simplest way to rebalance is to have a fixed number of partitions, and to move partitions between nodes as necessary.
+    - The problem with this approach is that it requires manual intervention when the cluster size changes.
+- dynamic partitioning
+    - The number of partitions is not fixed, but instead it is a function of the cluster size.
+    - The number of partitions is proportional to the number of nodes in the cluster.
+    - When a node is added to the cluster, the system automatically creates new partitions and moves some existing partitions to the new node.
+    - When a node is removed from the cluster, the system automatically moves the partitions from that node to other nodes.
+    - The advantage of this approach is that it does not require manual intervention when the cluster size changes.
+    - The disadvantage is that it is more complex to implement.
+- partitioning proportionally to nodes
+    - The number of partitions is proportional to the number of nodes in the cluster.
+    - When a node is added to the cluster, the system automatically creates new partitions and moves some existing partitions to the new node.
+    - When a node is removed from the cluster, the system automatically moves the partitions from that node to other nodes.
+    - The advantage of this approach is that it does not require manual intervention when the cluster size changes.
+    - The disadvantage is that it is more complex to implement.
+### operations: Automatic or manual rebalancing
+- Automatic rebalancing
+    - The database system automatically moves data around as machines are added and removed from the cluster.
+    - The advantage of this approach is that it does not require manual intervention when the cluster size changes.
+    - The disadvantage is that it is more complex to implement.It may cause the cluyter to be unstable.
+
+## Request routing  
+### what is the service discovery?
+    Service discovery is the process of automatically finding out the IP address of a node that provides a given service.
+### how to implement the service discovery?
+- Allow clients to connect any node. if the node is not the right replica, it will forward the the request to the right node.
+- Send all requests through a routing tier, which knows the network location of every node and can forward the request to the appropriate node.
+- Use a separate service discovery mechanism, such as ZooKeeper, etcd, or Consul.
+![Alt text](image-14.png)
+## Summary
+
+In this chapter we explored different ways of partitioning  a large dataset into smaller subsets.Partitioning is necessary when you have so much data that storing and processing it on a single machine is no longer feasible.
+The goal of partitioning is to spread the data and query load evenly across multiple machines, avoiding hot spots and bottlenecks. This requires choosing a  partitioning schema  that is appropriate for your data, and rebalancing the partitions when nodes are added or removed from the clusters.
+Two main approaches to partitioning:
+- Key range partitioning, where keys are stored, and a partition owns all the keys from some minimum up to some maximum. Sorting has the advantages that efficent range queries are possible, but there is a risk of hot spots if the application often accesses keys that are close together in the sorted order.
+- Hashing partitioning, where a hash function is applied to each key, and  a partition owns a range of hashes. This methods destorys the ordering of keys, making range queries inefficient, but may distribute laod more evenly.
+
+Hybird approaches are also possible, for example with a compound key: using one part of the key to identify the partition, and another part to identify the position within the partition.
+
+We also discussed the interaction between partitioning and  secondary indexes. A secondary index also needs to be partitioned, and there are two methods:
+- Document-partitioned indexes, where each partition has its own independent index.
+- Term-partitioned indexes, where the index is partitioned in the same way as the data, and the index partitions are stored on the same nodes as the data partitions.
+
+Finally, we discussed how to route requests to the appropriate partition. The simplest approach is to send all requests through a routing tier, which knows the network location of every node and can forward the request to the appropriate node. Alternatively, you can use a separate service discovery mechanism, such as ZooKeeper, etcd, or Consul.
+
+
+
+
 
