@@ -181,4 +181,29 @@ Imagine you hava a database with three replicas, and one of the replicas is curr
 ## Summary 
 ![Alt text](image-10.png)
 
+# chapter 6 Partitioning
+## Partitioning and Replication
+- partitioning means that different parts of a data set are stored on different nodes.
+- replication means keeping copies of the same data on multiple nodes, for increased durability and reduced latency.
+- partitioning and replication are closely related, because most databases store each partition on multiple nodes for redundancy.
+- The main reason for wanting to partition data is scalability.Different partitions can be assigned to different nodes, so partitions can be spread across multiple nodes.
+![Alt text](image-11.png)
+## Partitioning of Key-Value Data
+You hava a large amount of data, and you want to split it up into partitions so that different parts of the dataset are assigned to different nodes.How do we decide which node is responsible for which keys?
+- partitioning by key range
+    - The most common partitioning strategy is to assign a continuous range of keys to each partition.
+    - The problem with this approach is that it is not very flexible: if you want to split or merge partitions, you have to move a lot of data around.  
+    - The main reason why range partitioning is popular is that it works well with auto-incrementing primary keys.
+    - The partition boundaries might be chosen manually by the database administrator, or they might be chosen automatically by the database system.
+    - This partition strategy is used by Apache Cassandra, HBase, and RethinkDB.
+![Alt text](image-12.png)
+    - volume 1 contains words starting with a, volume 2 contains words starting with b,  but volume 12 contains words starting with l, m, n, o, p, q, r, s, t, u, v, w, x, y, and z.In order to distribute the data evenly, you would need to split volume 12 into 16 volumes, one for each letter of the alphabet.
+- partitioning by hash of key
+    - A better approach is to choose the partition based on a hash of the key.
+    - The hash function should be deterministic: for a given input value, it should always produce the same output, and different input values should ideally produce different output values.
+    - The hash function should be randomized: if you hash several values that are similar, they should not all fall into the same partition.
+    - A good hash function should take skewed data and make it uniformly distributed.
+    - For partitioning, the hash function need not be cryptographically secure; it just needs to be good enough to distribute the data evenly across the partitions.
+    - hash_code() functions which in many programming languages may not be suitable for partitioning because they are not randomizeda and the same key may have a different value in  different processes.
+![Alt text](image-13.png)
 
